@@ -11,11 +11,12 @@ import trackList from '../tracks';
 
 function Player() {
   const [tracks, setTracks] = useState(trackList);
-  const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
+  const [trackIndex, setTrackIndex] = useState(0);
   const [trackProgress, setTrackProgress] = useState(0);
+  const [volume, setVolume] = useState(0.75);
   const [isPlaying, setIsPlaying] = useState(false);
 
-  const audioSrc: string = tracks[currentTrackIndex];
+  const audioSrc: string = tracks[trackIndex];
   const audioRef = useRef(new Audio(audioSrc));
 
   // Pause / Play
@@ -23,15 +24,16 @@ function Player() {
     isPlaying ? audioRef.current.play() : audioRef.current.pause();
   }, [isPlaying]);
 
-  // Track Change, seek update tick
+  // Track change, seek update tick
   useEffect(() => {
     const updateProgressTick = () => {
       setTrackProgress(audioRef.current.currentTime);
     };
 
     audioRef.current.pause();
-    audioRef.current = new Audio(tracks[currentTrackIndex]);
+    audioRef.current = new Audio(tracks[trackIndex]);
     setTrackProgress(0);
+    audioRef.current.volume = volume;
     audioRef.current.addEventListener('timeupdate', updateProgressTick);
     audioRef.current.addEventListener('ended', switchNextTrack);
     if (isPlaying) {
@@ -41,11 +43,16 @@ function Player() {
     return () => {
       audioRef.current.removeEventListener('timeupdate', updateProgressTick);
     };
-  }, [currentTrackIndex]);
+  }, [trackIndex]);
 
   const handleSeek = (newTime: number) => {
     audioRef.current.currentTime = newTime;
     setTrackProgress(audioRef.current.currentTime);
+  };
+
+  const handleVolume = (newVolume: number) => {
+    audioRef.current.volume = newVolume;
+    setVolume(audioRef.current.volume);
   };
 
   const togglePlayback = () => {
@@ -53,14 +60,14 @@ function Player() {
   };
 
   const switchPrevTrack = () => {
-    if (currentTrackIndex > 0) {
-      setCurrentTrackIndex((p: number) => --p);
+    if (trackIndex > 0) {
+      setTrackIndex((p: number) => --p);
     }
   };
 
   const switchNextTrack = () => {
-    if (currentTrackIndex < tracks.length - 1) {
-      setCurrentTrackIndex((p: number) => ++p);
+    if (trackIndex < tracks.length - 1) {
+      setTrackIndex((p: number) => ++p);
     }
   };
 
@@ -81,7 +88,7 @@ function Player() {
               <li
                 key={index}
                 className={`media_list_card 
-                ${index == currentTrackIndex ? 'current_media_playing' : ''}`}
+                ${index == trackIndex ? 'current_media_playing' : ''}`}
               >
                 {track}
               </li>
@@ -97,11 +104,11 @@ function Player() {
             type="range"
             min={0}
             max={audioRef.current.duration ? audioRef.current.duration : 0}
+            step={1}
             value={trackProgress}
             onChange={(e) => {
               handleSeek(Number(e.target.value));
             }}
-            step={1}
           />
         </div>
 
@@ -123,7 +130,17 @@ function Player() {
           </div>
 
           <div className="vol_playlist_controls">
-            <input className="media_seek" type="range" min={0} max={100} />
+            <input
+              className="media_seek"
+              type="range"
+              min={0}
+              max={1}
+              step={0.01}
+              value={volume}
+              onChange={(e) => {
+                handleVolume(Number(e.target.value));
+              }}
+            />
           </div>
         </div>
       </div>
