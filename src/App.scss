@@ -1,16 +1,17 @@
-body {
+.shuffl_app {
   background-color: white;
   display: flex;
   flex-direction: column;
+  height: 100vh;
+  overflow: auto;
 
   .app_header {
     height: 80px;
-    background: cornflowerblue;
+    background-color: cornflowerblue;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border: 2px solid black;
-    flex: 1;
+    border: 2px solid green;
 
     .app_title {
       font-size: 2rem;
@@ -19,40 +20,100 @@ body {
     }
   }
 
-  .media_cover {
+  .cover_playlist_container {
     flex: 1;
-    .cover_image {
-      width: auto;
-      height: 200px;
+    background-color: lightcoral;
+    display: flex;
+    justify-content: space-around;
+    border: 2px solid red;
+
+    .media_cover {
+      flex: 2;
+      background-color: lightcoral;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border: 2px solid black;
+
+      .cover_image {
+        max-height: 150px;
+        max-width: 150px;
+        border: 2px solid green;
+      }
+    }
+
+    .media_playlist {
+      flex: 1;
+      background-color: violet;
+      border: 2px solid palegreen;
+
+      .media_list {
+        .media_list_card {
+          margin-bottom: 1rem;
+        }
+
+        .current_media_playing {
+          border: 2px solid blue;
+        }
+      }
     }
   }
 
   .media_controls {
     background-color: green;
-    position: absolute;
     width: 100%;
     height: 125px;
-    bottom: 0px;
-    text-align: center;
-    border: 2px solid black;
-    flex: 1;
+    left: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    border: 2px solid yellow;
 
     .seek_controls {
+      border: 2px solid black;
+
       .media_seek {
         width: 100%;
       }
     }
 
-    .play_controls {
+    .media_btn_container {
+      background-color: crimson;
       display: flex;
       justify-content: space-between;
-      .media_btn {
-        width: 50px;
-        height: 50px;
+      align-items: center;
+      flex: 1;
+      border: 2px solid turquoise;
 
-        .btn_img {
-          width: 25px;
+      .invisible_spacer {
+        background-color: darkorchid;
+        margin-right: auto;
+        visibility: hidden;
+      }
+
+      //Center this box later
+      .play_track_controls {
+        width: 200px;
+        display: flex;
+        justify-content: space-between;
+        border: 2px solid violet;
+
+        .media_btn {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 50px;
+          height: 50px;
+          border: 2px solid blue;
+
+          .btn_img {
+            width: 25px;
+          }
         }
+      }
+
+      .vol_playlist_controls {
+        margin-left: auto;
       }
     }
   }
