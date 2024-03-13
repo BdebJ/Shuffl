@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, DragEvent } from 'react';
 
 import musicNoteIcon from '../assets/icons/music-note-icon.svg';
 
@@ -9,15 +9,23 @@ import nextIcon from '../assets/icons/next-icon.svg';
 
 import trackList from '../tracks';
 
-function Player() {
-  const [tracks, setTracks] = useState(trackList);
-  const [trackIndex, setTrackIndex] = useState(0);
-  const [trackProgress, setTrackProgress] = useState(0);
-  const [volume, setVolume] = useState(0.75);
-  const [isPlaying, setIsPlaying] = useState(false);
+type Track = {
+  name: string;
+  path: string;
+};
 
-  const audioSrc: string = tracks[trackIndex];
-  const audioRef = useRef(new Audio(audioSrc));
+function Player() {
+  const [tracks, setTracks] = useState<Track[]>(trackList);
+  const [trackIndex, setTrackIndex] = useState<number>(0);
+  const [trackProgress, setTrackProgress] = useState<number>(0);
+  const [volume, setVolume] = useState<number>(0.75);
+  const [isPlaying, setIsPlaying] = useState<boolean>(false);
+  const [dragging, setDragging] = useState<boolean>(false);
+
+  const audioSrc: string = tracks[trackIndex].path;
+  const audioRef = useRef<HTMLAudioElement>(new Audio(audioSrc));
+
+  const dragRef = useRef<HTMLDivElement>(null);
 
   // Pause / Play
   useEffect(() => {
@@ -31,7 +39,7 @@ function Player() {
     };
 
     audioRef.current.pause();
-    audioRef.current = new Audio(tracks[trackIndex]);
+    audioRef.current = new Audio(tracks[trackIndex].path);
     setTrackProgress(0);
     audioRef.current.volume = volume;
     audioRef.current.addEventListener('timeupdate', updateProgressTick);
@@ -44,6 +52,56 @@ function Player() {
       audioRef.current.removeEventListener('timeupdate', updateProgressTick);
     };
   }, [trackIndex]);
+
+  const onUpload = (files: File[]) => {
+    const newTracks = files.map((file) => ({
+      name: file.name,
+      path: URL.createObjectURL(file),
+    }));
+
+    setTracks((prevTracks) => [...prevTracks, ...newTracks]);
+  };
+
+  const handleDragOver = (e: DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDrop = (e: DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    setDragging(false);
+    const files = [...e.dataTransfer.files];
+    const audioExtensions = ['.mp3', '.m4a', '.wav', '.ogg', '.aac', '.flac'];
+
+    if (
+      files.some((file) => !audioExtensions.includes(file.name.substring(file.name.lastIndexOf('.')).toLowerCase()))
+    ) {
+      return window.alert(`Invalid file type. \nOnly audio files allowed of format: ${audioExtensions}`);
+    }
+    if (files && files.length) {
+      onUpload(files);
+    }
+  };
+
+  const handleDragEnter = (e: DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (e.target !== dragRef.current) {
+      setDragging(true);
+    }
+  };
+
+  const handleDragLeave = (e: DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (e.target === dragRef.current) {
+      setDragging(false);
+    }
+  };
 
   const handleSeek = (newTime: number) => {
     audioRef.current.currentTime = newTime;
@@ -82,18 +140,32 @@ function Player() {
           <img className="cover_image" src={musicNoteIcon} alt="Music Note" />
         </div>
 
-        <div className="media_playlist">
-          <ol className="media_list">
-            {tracks.map((track, index) => (
-              <li
-                key={index}
-                className={`media_list_card 
+        <div
+          onDragOver={handleDragOver}
+          onDragEnter={handleDragEnter}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+          className="media_playlist"
+        >
+          <div className="media_list">
+            <ol>
+              {tracks.map((track, index) => (
+                <li
+                  key={index}
+                  className={`media_list_card 
                 ${index == trackIndex ? 'current_media_playing' : ''}`}
-              >
-                {track}
-              </li>
-            ))}
-          </ol>
+                >
+                  {track.name}
+                </li>
+              ))}
+            </ol>
+          </div>
+
+          {dragging && (
+            <div ref={dragRef} className="media_list media_file_overlay">
+              Drop files to add to playlist
+            </div>
+          )}
         </div>
       </div>
 
