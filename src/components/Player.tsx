@@ -50,6 +50,7 @@ function Player() {
 
     return () => {
       audioRef.current.removeEventListener('timeupdate', updateProgressTick);
+      audioRef.current.removeEventListener('ended', switchNextTrack);
     };
   }, [trackIndex]);
 
