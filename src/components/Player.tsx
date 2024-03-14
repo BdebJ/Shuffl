@@ -18,7 +18,7 @@ function Player() {
   const [tracks, setTracks] = useState<Track[]>(trackList);
   const [trackIndex, setTrackIndex] = useState<number>(0);
   const [trackProgress, setTrackProgress] = useState<number>(0);
-  const [volume, setVolume] = useState<number>(0.75);
+  const [volume, setVolume] = useState<number>(0.25);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [dragging, setDragging] = useState<boolean>(false);
 
@@ -32,27 +32,32 @@ function Player() {
     isPlaying ? audioRef.current.play() : audioRef.current.pause();
   }, [isPlaying]);
 
+  useEffect(() => {
+    const audioCurr = audioRef.current;
+    audioCurr.addEventListener('timeupdate', updateProgressTick);
+    audioCurr.addEventListener('ended', switchNextTrack);
+
+    return () => {
+      audioCurr.removeEventListener('timeupdate', updateProgressTick);
+      audioCurr.removeEventListener('ended', switchNextTrack);
+    };
+  }, []);
+
   // Track change, seek update tick
   useEffect(() => {
-    const updateProgressTick = () => {
-      setTrackProgress(audioRef.current.currentTime);
-    };
-
     audioRef.current.pause();
-    audioRef.current = new Audio(tracks[trackIndex].path);
+    audioRef.current.src = tracks[trackIndex].path;
+    audioRef.current.load();
     setTrackProgress(0);
     audioRef.current.volume = volume;
-    audioRef.current.addEventListener('timeupdate', updateProgressTick);
-    audioRef.current.addEventListener('ended', switchNextTrack);
     if (isPlaying) {
       audioRef.current.play();
     }
-
-    return () => {
-      audioRef.current.removeEventListener('timeupdate', updateProgressTick);
-      audioRef.current.removeEventListener('ended', switchNextTrack);
-    };
   }, [trackIndex]);
+
+  const updateProgressTick = () => {
+    setTrackProgress(audioRef.current.currentTime);
+  };
 
   const onUpload = (files: File[]) => {
     const newTracks = files.map((file) => ({
@@ -119,15 +124,12 @@ function Player() {
   };
 
   const switchPrevTrack = () => {
-    if (trackIndex > 0) {
-      setTrackIndex((p: number) => --p);
-    }
+    setTrackIndex((prevIndex) => Math.max(0, prevIndex - 1));
   };
 
   const switchNextTrack = () => {
-    if (trackIndex < tracks.length - 1) {
-      setTrackIndex((p: number) => ++p);
-    }
+    console.log(tracks);
+    setTrackIndex((prevIndex) => Math.min(tracks.length - 1, prevIndex + 1));
   };
 
   return (
