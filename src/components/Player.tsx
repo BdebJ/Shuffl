@@ -1,7 +1,6 @@
-import { useState, useRef, useEffect, DragEvent } from 'react';
+import { useState, useRef, useEffect, useCallback, DragEvent } from 'react';
 
 import musicNoteIcon from '../assets/icons/music-note-icon.svg';
-
 import previousIcon from '../assets/icons/previous-icon.svg';
 import pauseIcon from '../assets/icons/pause-icon.svg';
 import playIcon from '../assets/icons/play-icon.svg';
@@ -22,38 +21,8 @@ function Player() {
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [dragging, setDragging] = useState<boolean>(false);
 
-  const audioSrc: string = tracks[trackIndex].path;
-  const audioRef = useRef<HTMLAudioElement>(new Audio(audioSrc));
-
+  const audioRef = useRef<HTMLAudioElement>(new Audio());
   const dragRef = useRef<HTMLDivElement>(null);
-
-  // Pause / Play
-  useEffect(() => {
-    isPlaying ? audioRef.current.play() : audioRef.current.pause();
-  }, [isPlaying]);
-
-  useEffect(() => {
-    const audioCurr = audioRef.current;
-    audioCurr.addEventListener('timeupdate', updateProgressTick);
-    audioCurr.addEventListener('ended', switchNextTrack);
-
-    return () => {
-      audioCurr.removeEventListener('timeupdate', updateProgressTick);
-      audioCurr.removeEventListener('ended', switchNextTrack);
-    };
-  }, []);
-
-  // Track change, seek update tick
-  useEffect(() => {
-    audioRef.current.pause();
-    audioRef.current.src = tracks[trackIndex].path;
-    audioRef.current.load();
-    setTrackProgress(0);
-    audioRef.current.volume = volume;
-    if (isPlaying) {
-      audioRef.current.play();
-    }
-  }, [trackIndex]);
 
   const updateProgressTick = () => {
     setTrackProgress(audioRef.current.currentTime);
@@ -64,7 +33,6 @@ function Player() {
       name: file.name,
       path: URL.createObjectURL(file),
     }));
-
     setTracks((prevTracks) => [...prevTracks, ...newTracks]);
   };
 
@@ -86,6 +54,7 @@ function Player() {
     ) {
       return window.alert(`Invalid file type. \nOnly audio files allowed of format: ${audioExtensions}`);
     }
+
     if (files && files.length) {
       onUpload(files);
     }
@@ -123,14 +92,45 @@ function Player() {
     setIsPlaying((p: boolean) => !p);
   };
 
-  const switchPrevTrack = () => {
-    setTrackIndex((prevIndex) => Math.max(0, prevIndex - 1));
-  };
+  const switchPrevTrack = useCallback(() => {
+    console.log('Switching to prev track');
+    setTrackIndex((prevIndex) => (prevIndex ? prevIndex - 1 : tracks.length - 1));
+  }, [tracks.length]);
 
-  const switchNextTrack = () => {
-    console.log(tracks);
-    setTrackIndex((prevIndex) => Math.min(tracks.length - 1, prevIndex + 1));
-  };
+  const switchNextTrack = useCallback(() => {
+    console.log('Switching to next track');
+    setTrackIndex((prevIndex) => (prevIndex + 1) % tracks.length);
+  }, [tracks.length]);
+
+  // Pause / Play
+  useEffect(() => {
+    isPlaying ? audioRef.current.play() : audioRef.current.pause();
+  }, [isPlaying]);
+
+  useEffect(() => {
+    const audioCurr = audioRef.current;
+    console.log('Adding event listeners');
+    audioCurr.addEventListener('timeupdate', updateProgressTick);
+    audioCurr.addEventListener('ended', switchNextTrack);
+
+    return () => {
+      console.log('Removing event listeners');
+      audioCurr.removeEventListener('timeupdate', updateProgressTick);
+      audioCurr.removeEventListener('ended', switchNextTrack);
+    };
+  }, [switchNextTrack]);
+
+  // Track change, seek update tick
+  useEffect(() => {
+    audioRef.current.pause();
+    audioRef.current.src = tracks[trackIndex].path;
+    audioRef.current.load();
+    setTrackProgress(0);
+    audioRef.current.volume = volume;
+    if (isPlaying) {
+      audioRef.current.play();
+    }
+  }, [trackIndex]);
 
   return (
     <>
