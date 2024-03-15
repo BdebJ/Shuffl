@@ -1,12 +1,6 @@
 import { useState, useRef, useEffect, useCallback, DragEvent } from 'react';
 
-import musicNoteIcon from '../assets/icons/music-note-icon.svg';
-import previousIcon from '../assets/icons/previous-icon.svg';
-import pauseIcon from '../assets/icons/pause-icon.svg';
-import playIcon from '../assets/icons/play-icon.svg';
-import nextIcon from '../assets/icons/next-icon.svg';
-
-import trackList from '../tracks';
+import { MusicNoteIcon, PreviousIcon, NextIcon, PlayIcon, PauseIcon } from './Icons';
 
 type Track = {
   name: string;
@@ -14,6 +8,7 @@ type Track = {
 };
 
 let didInit = false;
+const themeColor = '#673ab7';
 
 function Player() {
   const [tracks, setTracks] = useState<Track[]>([]);
@@ -32,6 +27,7 @@ function Player() {
   };
 
   const onUpload = (files: File[]) => {
+    console.log('Adding new tracks');
     const newTracks = files.map((file) => ({
       name: file.name,
       path: URL.createObjectURL(file),
@@ -85,11 +81,13 @@ function Player() {
   };
 
   const handleSeek = (newTime: number) => {
+    console.log('Seek chnaged');
     audioRef.current.currentTime = newTime;
     setTrackProgress(audioRef.current.currentTime);
   };
 
   const handleVolume = (newVolume: number) => {
+    console.log('Volume chnaged');
     audioRef.current.volume = newVolume;
     setVolume(audioRef.current.volume);
   };
@@ -177,12 +175,12 @@ function Player() {
   return (
     <>
       <header className="app_header">
-        <h1 className="app_title">Music Player</h1>
+        <h1 className="app_title">Shuffl</h1>
       </header>
 
       <div className="cover_playlist_container">
         <div className="media_cover">
-          <img className="cover_image" src={musicNoteIcon} alt="Music Note" />
+          <MusicNoteIcon color={themeColor} />
         </div>
 
         <div
@@ -234,19 +232,19 @@ function Player() {
 
           <div className="play_track_controls">
             <button type="button" className="media_btn" onClick={switchPrevTrack}>
-              <img className="btn_img" src={previousIcon} alt="Previous" />
+              <PreviousIcon color={themeColor} />
             </button>
 
             <button type="button" className="media_btn" onClick={togglePlayback}>
-              <img className="btn_img" src={isPlaying ? pauseIcon : playIcon} alt="Play/Pause" />
+              {isPlaying ? <PauseIcon color={themeColor} /> : <PlayIcon color={themeColor} />}
             </button>
 
             <button type="button" className="media_btn" onClick={switchNextTrack}>
-              <img className="btn_img" src={nextIcon} alt="Next" />
+              <NextIcon color={themeColor} />
             </button>
           </div>
 
-          <div className="vol_playlist_controls">
+          <div className="vol_controls">
             <input
               className="media_seek"
               type="range"
