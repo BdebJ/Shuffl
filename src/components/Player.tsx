@@ -13,12 +13,15 @@ type Track = {
   path: string;
 };
 
+let didInit = false;
+
 function Player() {
-  const [tracks, setTracks] = useState<Track[]>(trackList);
-  const [trackIndex, setTrackIndex] = useState<number>(0);
+  const [tracks, setTracks] = useState<Track[]>([]);
+  const [trackIndex, setTrackIndex] = useState<number>(-1);
   const [trackProgress, setTrackProgress] = useState<number>(0);
-  const [volume, setVolume] = useState<number>(0.25);
+  const [volume, setVolume] = useState<number>(0.5);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
+  const [repeat, setRepeat] = useState<boolean>(false);
   const [dragging, setDragging] = useState<boolean>(false);
 
   const audioRef = useRef<HTMLAudioElement>(new Audio());
@@ -34,6 +37,9 @@ function Player() {
       path: URL.createObjectURL(file),
     }));
     setTracks((prevTracks) => [...prevTracks, ...newTracks]);
+    if (tracks.length === 0) {
+      setTrackIndex(0);
+    }
   };
 
   const handleDragOver = (e: DragEvent) => {
@@ -89,32 +95,64 @@ function Player() {
   };
 
   const togglePlayback = () => {
-    setIsPlaying((p: boolean) => !p);
+    if (tracks.length > 0) {
+      isPlaying ? audioRef.current.pause() : audioRef.current.play();
+    }
+  };
+
+  const setPaused = () => {
+    console.log('Paused event fired');
+    setIsPlaying(false);
+  };
+
+  const setPlaying = () => {
+    console.log('Play event fired');
+    setIsPlaying(true);
   };
 
   const switchPrevTrack = useCallback(() => {
     console.log('Switching to prev track');
-    setTrackIndex((prevIndex) => (prevIndex ? prevIndex - 1 : tracks.length - 1));
-  }, [tracks.length]);
+    if (tracks.length > 0) {
+      if (repeat) {
+        setTrackIndex((prevIndex) => (prevIndex > 0 ? prevIndex - 1 : tracks.length - 1));
+      } else {
+        setTrackIndex((prevIndex) => Math.max(0, prevIndex - 1));
+      }
+    }
+  }, [repeat, tracks.length]);
 
   const switchNextTrack = useCallback(() => {
     console.log('Switching to next track');
-    setTrackIndex((prevIndex) => (prevIndex + 1) % tracks.length);
-  }, [tracks.length]);
+    if (tracks.length > 0) {
+      if (repeat) {
+        setTrackIndex((prevIndex) => (prevIndex + 1) % tracks.length);
+      } else {
+        setTrackIndex((prevIndex) => Math.min(tracks.length - 1, prevIndex + 1));
+      }
+    }
+  }, [repeat, tracks.length]);
 
-  // Pause / Play
   useEffect(() => {
-    isPlaying ? audioRef.current.play() : audioRef.current.pause();
-  }, [isPlaying]);
+    if (tracks.length !== 0 && trackIndex === -1) {
+      setTrackIndex(0);
+    }
+    if (tracks.length === 0 && trackIndex !== -1) {
+      setTrackIndex(-1);
+    }
+  }, [trackIndex, tracks.length]);
 
   useEffect(() => {
     const audioCurr = audioRef.current;
     console.log('Adding event listeners');
+    audioCurr.addEventListener('pause', setPaused);
+    audioCurr.addEventListener('playing', setPlaying);
     audioCurr.addEventListener('timeupdate', updateProgressTick);
     audioCurr.addEventListener('ended', switchNextTrack);
 
     return () => {
       console.log('Removing event listeners');
+      audioCurr.removeEventListener('pause', setPaused);
+      audioCurr.removeEventListener('playing', setPlaying);
       audioCurr.removeEventListener('timeupdate', updateProgressTick);
       audioCurr.removeEventListener('ended', switchNextTrack);
     };
@@ -122,13 +160,17 @@ function Player() {
 
   // Track change, seek update tick
   useEffect(() => {
-    audioRef.current.pause();
-    audioRef.current.src = tracks[trackIndex].path;
-    audioRef.current.load();
-    setTrackProgress(0);
-    audioRef.current.volume = volume;
-    if (isPlaying) {
-      audioRef.current.play();
+    if (tracks.length > 0) {
+      audioRef.current.pause();
+      audioRef.current.src = tracks[trackIndex].path;
+      audioRef.current.load();
+      setTrackProgress(0);
+      audioRef.current.volume = volume;
+      if (didInit) {
+        audioRef.current.play();
+      } else {
+        didInit = true;
+      }
     }
   }, [trackIndex]);
 
