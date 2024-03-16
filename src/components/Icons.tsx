@@ -1,10 +1,11 @@
-type ThemeColor = {
+type SvgProp = {
+  className: string;
   color: string;
 };
 
-const MusicNoteIcon = ({ color }: ThemeColor) => (
+const MusicNoteIcon = ({ className, color }: SvgProp) => (
   <svg
-    className="cover_image"
+    className={className}
     version="1.1"
     id="Layer_1"
     xmlns="http://www.w3.org/2000/svg"
@@ -26,9 +27,9 @@ const MusicNoteIcon = ({ color }: ThemeColor) => (
   </svg>
 );
 
-const PreviousIcon = ({ color }: ThemeColor) => (
+const PreviousIcon = ({ className, color }: SvgProp) => (
   <svg
-    className="btn_img"
+    className={className}
     xmlns="http://www.w3.org/2000/svg"
     shapeRendering="geometricPrecision"
     textRendering="geometricPrecision"
@@ -45,9 +46,9 @@ const PreviousIcon = ({ color }: ThemeColor) => (
   </svg>
 );
 
-const NextIcon = ({ color }: ThemeColor) => (
+const NextIcon = ({ className, color }: SvgProp) => (
   <svg
-    className="btn_img"
+    className={className}
     xmlns="http://www.w3.org/2000/svg"
     shapeRendering="geometricPrecision"
     textRendering="geometricPrecision"
@@ -64,9 +65,9 @@ const NextIcon = ({ color }: ThemeColor) => (
   </svg>
 );
 
-const PlayIcon = ({ color }: ThemeColor) => (
+const PlayIcon = ({ className, color }: SvgProp) => (
   <svg
-    className="btn_img"
+    className={className}
     version="1.1"
     id="Layer_1"
     xmlns="http://www.w3.org/2000/svg"
@@ -84,9 +85,9 @@ const PlayIcon = ({ color }: ThemeColor) => (
   </svg>
 );
 
-const PauseIcon = ({ color }: ThemeColor) => (
+const PauseIcon = ({ className, color }: SvgProp) => (
   <svg
-    className="btn_img"
+    className={className}
     version="1.1"
     id="Layer_1"
     xmlns="http://www.w3.org/2000/svg"

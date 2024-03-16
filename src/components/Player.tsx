@@ -8,7 +8,7 @@ type Track = {
 };
 
 let didInit = false;
-const themeColor = '#673ab7';
+let themeColor = '#673ab7';
 
 function Player() {
   const [tracks, setTracks] = useState<Track[]>([]);
@@ -180,7 +180,7 @@ function Player() {
 
       <div className="cover_playlist_container">
         <div className="media_cover">
-          <MusicNoteIcon color={themeColor} />
+          <MusicNoteIcon className="cover_image" color={themeColor} />
         </div>
 
         <div
@@ -232,15 +232,19 @@ function Player() {
 
           <div className="play_track_controls">
             <button type="button" className="media_btn" onClick={switchPrevTrack}>
-              <PreviousIcon color={themeColor} />
+              <PreviousIcon className="btn_img" color={themeColor} />
             </button>
 
             <button type="button" className="media_btn" onClick={togglePlayback}>
-              {isPlaying ? <PauseIcon color={themeColor} /> : <PlayIcon color={themeColor} />}
+              {isPlaying ? (
+                <PauseIcon className="btn_img" color={themeColor} />
+              ) : (
+                <PlayIcon className="btn_img" color={themeColor} />
+              )}
             </button>
 
             <button type="button" className="media_btn" onClick={switchNextTrack}>
-              <NextIcon color={themeColor} />
+              <NextIcon className="btn_img" color={themeColor} />
             </button>
           </div>
 
