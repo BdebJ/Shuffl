@@ -1,17 +1,44 @@
+@import './index.scss';
+
+.color_background {
+  // background: linear-gradient(45deg, blue 20%, green 100%) no-repeat;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: -1;
+  // &.playing {
+  //   animation: colorChange 20s alternate infinite;
+  // }
+}
+
+// @keyframes colorChange {
+//   from {
+//     filter: hue-rotate(0deg);
+//   }
+//   to {
+//     filter: hue-rotate(360deg);
+//   }
+// }
+
 .shuffl_app {
   display: flex;
   flex-direction: column;
   height: 100vh;
   overflow: auto;
+  backdrop-filter: blur(25px);
 
   .app_header {
     height: 80px;
+    margin: 2px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border: 2px solid green;
+    border: 2px solid $theme_color;
 
     .app_title {
+      font-family: Verdana, Geneva, Tahoma, sans-serif;
       font-size: 2rem;
       font-weight: bold;
       padding: 1rem;
@@ -22,35 +49,63 @@
     flex: 1;
     display: flex;
     justify-content: space-around;
-    border: 2px solid red;
 
     .media_cover {
-      flex: 2;
+      flex: 1;
+      max-width: 500px;
+      height: 500px;
+      padding: 25px;
+      border-radius: 50px;
+      box-shadow: 0 20px 20px lightgray;
+      margin: 20px;
       display: flex;
       justify-content: center;
       align-items: center;
-      border: 2px solid black;
 
-      .cover_image {
+      .cover_img {
         max-height: 150px;
         max-width: 150px;
-        border: 2px solid green;
       }
     }
 
-    .media_playlist {
-      flex: 1;
+    .media_filedrop_playlist {
+      flex: 2;
       position: relative;
-      border: 2px solid palegreen;
+      .media_playlist_container {
+        .media_playlist {
+          height: 700px;
+          overflow: hidden;
+          overflow-y: auto;
+          &::-webkit-scrollbar {
+            width: 15px;
+          }
 
-      .media_list {
-        border: 2px solid green;
-        .media_list_card {
-          margin-bottom: 1rem;
-        }
+          &::-webkit-scrollbar-track {
+            margin-top: 2px;
+            margin-bottom: 2px;
+            background: lightgray;
+          }
 
-        .current_media_playing {
-          border: 2px solid blue;
+          &::-webkit-scrollbar-thumb {
+            background: $theme_color;
+          }
+
+          &::-webkit-scrollbar-thumb:hover {
+            background: $theme_color;
+          }
+          .media_list_card {
+            display: flex;
+            align-items: center;
+            justify-content: left;
+            min-height: 50px;
+            padding: 10px;
+            border: 1px solid lightgray;
+            margin: 2px 2px 2px 0;
+          }
+          .current_media_playing {
+            padding: 7px;
+            border: 4px solid $theme_color;
+          }
         }
       }
 
@@ -61,12 +116,12 @@
         top: 0;
         left: 0;
         opacity: 0.7;
-        background-color: green;
+        background-color: $theme_color;
         display: flex;
         align-items: center;
         justify-content: center;
         z-index: 9;
-        border: 2px solid red;
+        border: 1px solid red;
       }
     }
   }
@@ -78,13 +133,24 @@
     bottom: 0;
     display: flex;
     flex-direction: column;
-    border: 2px solid yellow;
 
     .seek_controls {
-      border: 2px solid black;
-
       .media_seek {
+        height: 3px;
         width: 100%;
+
+        &::-webkit-slider-thumb {
+          appearance: none;
+          width: 15px;
+          height: 15px;
+          background-color: $theme_color;
+          border-radius: 50%;
+
+          &:hover {
+            width: 20px;
+            height: 20px;
+          }
+        }
       }
     }
 
@@ -93,19 +159,16 @@
       justify-content: space-between;
       align-items: center;
       flex: 1;
-      border: 2px solid turquoise;
 
       .invisible_spacer {
         margin-right: auto;
         visibility: hidden;
       }
 
-      //Center this box later
       .play_track_controls {
         width: 200px;
         display: flex;
         justify-content: space-between;
-        border: 2px solid violet;
 
         .media_btn {
           display: flex;
@@ -113,7 +176,6 @@
           justify-content: center;
           width: 50px;
           height: 50px;
-          border: 2px solid blue;
 
           .btn_img {
             width: 25px;
@@ -123,7 +185,6 @@
 
       .vol_controls {
         margin-left: auto;
-        border: 2px solid red;
       }
     }
   }

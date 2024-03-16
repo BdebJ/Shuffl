@@ -1,11 +1,34 @@
 @import './assets/reset.scss';
 
+$theme_color: #673ab7;
+
+* {
+  box-sizing: border-box;
+}
+
 body {
   font-family: Roboto, sans-serif;
 }
 
 button {
-  &:hover {
-    cursor: pointer;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+input[type='range'] {
+  height: 1px;
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  background: lightgray;
+  cursor: pointer;
+
+  &::-webkit-slider-thumb {
+    appearance: none;
+    width: 15px;
+    height: 15px;
+    background-color: $theme_color;
+    border-radius: 50%;
   }
 }

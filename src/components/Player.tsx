@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback, DragEvent } from 'react';
 
 import { MusicNoteIcon, PreviousIcon, NextIcon, PlayIcon, PauseIcon } from './Icons';
+import Background from './Background';
 
 type Track = {
   name: string;
@@ -8,9 +9,8 @@ type Track = {
 };
 
 let didInit = false;
-let themeColor = '#673ab7';
 
-function Player() {
+function Player({ themeColor }: { themeColor: string }) {
   const [tracks, setTracks] = useState<Track[]>([]);
   const [trackIndex, setTrackIndex] = useState<number>(-1);
   const [trackProgress, setTrackProgress] = useState<number>(0);
@@ -21,6 +21,11 @@ function Player() {
 
   const audioRef = useRef<HTMLAudioElement>(new Audio());
   const dragRef = useRef<HTMLDivElement>(null);
+
+  const currentPercentage = audioRef.current.duration ? `${(trackProgress / audioRef.current.duration) * 100}%` : '0%';
+  const trackStyling = `
+    -webkit-gradient(linear, 0% 0%, 100% 0%, color-stop(${currentPercentage}, ${themeColor}), color-stop(${currentPercentage}, lightgray))
+  `;
 
   const updateProgressTick = () => {
     setTrackProgress(audioRef.current.currentTime);
@@ -175,12 +180,14 @@ function Player() {
   return (
     <>
       <header className="app_header">
-        <h1 className="app_title">Shuffl</h1>
+        <h1 className="app_title" style={{ color: themeColor }}>
+          Shuffl
+        </h1>
       </header>
 
       <div className="cover_playlist_container">
         <div className="media_cover">
-          <MusicNoteIcon className="cover_image" color={themeColor} />
+          <MusicNoteIcon className="cover_img" color={themeColor} />
         </div>
 
         <div
@@ -188,17 +195,17 @@ function Player() {
           onDragEnter={handleDragEnter}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
-          className="media_playlist"
+          className="media_filedrop_playlist"
         >
-          <div className="media_list">
-            <ol>
+          <div className="media_playlist_container">
+            <ol className="media_playlist">
               {tracks.map((track, index) => (
                 <li
                   key={index}
                   className={`media_list_card 
                 ${index == trackIndex ? 'current_media_playing' : ''}`}
                 >
-                  {track.name}
+                  {track.name.split('.')[0]}
                 </li>
               ))}
             </ol>
@@ -224,6 +231,7 @@ function Player() {
             onChange={(e) => {
               handleSeek(Number(e.target.value));
             }}
+            style={{ background: trackStyling }}
           />
         </div>
 
@@ -263,6 +271,8 @@ function Player() {
           </div>
         </div>
       </div>
+
+      <Background isPlaying={isPlaying} />
     </>
   );
 }
