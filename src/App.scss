@@ -94,7 +94,7 @@
           }
 
           &::-webkit-scrollbar-thumb:hover {
-            background: $theme_color;
+            background: #3f2273;
           }
           .media_list_card {
             display: flex;
@@ -113,7 +113,6 @@
       }
 
       .media_file_overlay {
-        color: lightgray;
         font-size: 2.5rem;
         font-weight: bold;
         position: absolute;
@@ -123,11 +122,20 @@
         bottom: 0;
         opacity: 0.9;
         margin: 2px 15px 2px 5px;
-        background-color: $theme_color;
         display: flex;
         align-items: center;
         justify-content: center;
         z-index: 9;
+      }
+
+      .media_empty_list {
+        color: $theme_color;
+        background-color: white;
+      }
+
+      .media_file_drag {
+        color: white;
+        background-color: $theme_color;
       }
     }
   }
@@ -166,9 +174,7 @@
       align-items: center;
       flex: 1;
 
-      .invisible_spacer {
-        margin-right: auto;
-        visibility: hidden;
+      .media_duration_view {
       }
 
       .play_track_controls {
@@ -190,7 +196,6 @@
       }
 
       .vol_controls {
-        margin-left: auto;
       }
     }
   }

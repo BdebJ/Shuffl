@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect, useCallback, DragEvent } from 'react';
 
 import { MusicNoteIcon, PreviousIcon, NextIcon, PlayIcon, PauseIcon } from './Icons';
-import Background from './Background';
 
 type Track = {
   name: string;
@@ -9,8 +8,9 @@ type Track = {
 };
 
 let didInit = false;
+const themeColor = '#673ab7';
 
-function Player({ themeColor }: { themeColor: string }) {
+function Player() {
   const [tracks, setTracks] = useState<Track[]>([]);
   const [trackIndex, setTrackIndex] = useState<number>(-1);
   const [trackProgress, setTrackProgress] = useState<number>(0);
@@ -28,7 +28,10 @@ function Player({ themeColor }: { themeColor: string }) {
   `;
 
   const updateProgressTick = () => {
-    setTrackProgress(audioRef.current.currentTime);
+    setTrackProgress((prevProgress) => {
+      if (Math.floor(prevProgress) < Math.floor(audioRef.current.currentTime)) return audioRef.current.currentTime;
+      else return prevProgress;
+    });
   };
 
   const onUpload = (files: File[]) => {
@@ -210,12 +213,17 @@ function Player({ themeColor }: { themeColor: string }) {
               ))}
             </ol>
           </div>
-
-          {dragging && (
-            <div ref={dragRef} className="media_list media_file_overlay">
-              Drop files to add to playlist
-            </div>
-          )}
+          {(() => {
+            if (dragging) {
+              return (
+                <div ref={dragRef} className="media_file_drag media_file_overlay">
+                  Drop files to add to playlist
+                </div>
+              );
+            } else if (tracks.length === 0) {
+              return <div className="media_empty_list media_file_overlay">Drop files to add to playlist</div>;
+            }
+          })()}
         </div>
       </div>
 
@@ -236,7 +244,9 @@ function Player({ themeColor }: { themeColor: string }) {
         </div>
 
         <div className="media_btn_container">
-          <div className="invisible_spacer" />
+          <div className="media_duration_view">
+            {Math.floor(audioRef.current.currentTime)}/{Math.floor(audioRef.current.duration)}
+          </div>
 
           <div className="play_track_controls">
             <button type="button" className="media_btn" onClick={switchPrevTrack}>
@@ -271,8 +281,6 @@ function Player({ themeColor }: { themeColor: string }) {
           </div>
         </div>
       </div>
-
-      <Background isPlaying={isPlaying} />
     </>
   );
 }
