@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
 import { PlayerHeader } from './PlayerHeader';
 import { MediaDisplay } from './MediaDisplay';
@@ -9,30 +9,38 @@ export type TrackElement = {
   path: string;
 };
 
+export type TrackState = {
+  progress: number;
+  duration: number;
+};
+
 let didInit = false;
 const themeColor = '#673ab7';
 
 export const Player = () => {
-  const [tracks, _setTracks] = useState<TrackElement[]>([]);
+  const [tracksArr, setTracksArr] = useState<TrackElement[]>([]);
   const [trackIndex, setTrackIndex] = useState<number>(-1);
-  const [trackProgress, setTrackProgress] = useState<number>(0);
-  const [volume, setVolume] = useState<number>(0.5);
+  const [volume, setVolume] = useState<number>(0.25);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
+  const [trackState, setTrackState] = useState<TrackState>({
+    progress: 0,
+    duration: 0,
+  });
 
   const audioRef = useRef<HTMLAudioElement>(new Audio());
-  const tracksRef = useRef(tracks);
+  const tracksRef = useRef<TrackElement[]>(tracksArr);
 
-  tracksRef.current = tracks;
+  tracksRef.current = tracksArr;
 
   const setTracks = (updatedTracks: TrackElement[]) => {
-    _setTracks(updatedTracks);
+    setTracksArr(updatedTracks);
   };
 
   const updateProgressTick = () => {
-    setTrackProgress((prevProgress) => {
-      if (Math.floor(prevProgress) < Math.floor(audioRef.current.currentTime)) return audioRef.current.currentTime;
-      else return prevProgress;
-    });
+    setTrackState((prevState) => ({
+      ...prevState,
+      progress: Math.floor(audioRef.current.currentTime),
+    }));
   };
 
   const onUpload = (files: File[]) => {
@@ -41,8 +49,8 @@ export const Player = () => {
       name: file.name,
       path: URL.createObjectURL(file),
     }));
-    setTracks([...tracks, ...newTracks]);
-    if (tracks.length === 0) {
+    setTracks([...tracksArr, ...newTracks]);
+    if (tracksArr.length === 0) {
       setTrackIndex(0);
     }
   };
@@ -50,7 +58,10 @@ export const Player = () => {
   const handleSeek = (newTime: number) => {
     console.log('Seek chnaged');
     audioRef.current.currentTime = newTime;
-    setTrackProgress(audioRef.current.currentTime);
+    setTrackState((prevState) => ({
+      ...prevState,
+      progress: newTime,
+    }));
   };
 
   const handleVolume = (newVolume: number) => {
@@ -60,7 +71,7 @@ export const Player = () => {
   };
 
   const togglePlayback = () => {
-    if (tracks.length > 0) {
+    if (tracksArr.length > 0) {
       isPlaying ? audioRef.current.pause() : audioRef.current.play();
     }
   };
@@ -75,34 +86,53 @@ export const Player = () => {
     setIsPlaying(true);
   };
 
-  const switchPrevTrack = useCallback(() => {
+  const switchPrevTrack = () => {
     console.log('Switching to prev track');
-    if (tracksRef.current.length > 0) {
-      setTrackIndex((prevIndex) => Math.max(0, prevIndex - 1));
-    }
-  }, []);
-
-  const switchNextTrack = useCallback(() => {
-    console.log('Switching to next track');
-    setTrackProgress(0);
+    setTrackState((prevState) => ({
+      ...prevState,
+      progress: 0,
+    }));
     audioRef.current.currentTime = 0;
     if (tracksRef.current.length > 0) {
-      setTrackIndex((prevIndex) => Math.min(tracksRef.current.length - 1, prevIndex + 1));
+      setTrackIndex((prevIndex) => {
+        if (prevIndex === 0) {
+          return tracksRef.current.length - 1;
+        } else {
+          return prevIndex - 1;
+        }
+      });
     }
-  }, []);
+  };
 
-  useEffect(() => {
-    if (tracks.length !== 0 && trackIndex === -1) {
-      setTrackIndex(0);
+  const switchNextTrack = () => {
+    console.log('Switching to next track');
+    setTrackState((prevState) => ({
+      ...prevState,
+      progress: 0,
+    }));
+    audioRef.current.currentTime = 0;
+    if (tracksRef.current.length > 0) {
+      setTrackIndex((prevIndex) => {
+        if (prevIndex === tracksRef.current.length - 1) {
+          return 0;
+        } else {
+          return prevIndex + 1;
+        }
+      });
     }
-    if (tracks.length === 0 && trackIndex !== -1) {
-      setTrackIndex(-1);
-    }
-  }, [trackIndex, tracks.length]);
+  };
+
+  const setMetadata = () => {
+    setTrackState((prevState) => ({
+      ...prevState,
+      duration: audioRef.current.duration,
+    }));
+  };
 
   useEffect(() => {
     const audioCurr = audioRef.current;
     console.log('Adding event listeners');
+    audioCurr.addEventListener('loadedmetadata', setMetadata);
     audioCurr.addEventListener('pause', setPaused);
     audioCurr.addEventListener('playing', setPlaying);
     audioCurr.addEventListener('timeupdate', updateProgressTick);
@@ -110,19 +140,33 @@ export const Player = () => {
 
     return () => {
       console.log('Removing event listeners');
+      audioCurr.removeEventListener('loadedmetadata', setMetadata);
       audioCurr.removeEventListener('pause', setPaused);
       audioCurr.removeEventListener('playing', setPlaying);
       audioCurr.removeEventListener('timeupdate', updateProgressTick);
       audioCurr.removeEventListener('ended', switchNextTrack);
     };
-  }, [switchNextTrack]);
+  }, []);
+
+  useEffect(() => {
+    if (tracksArr.length !== 0 && trackIndex === -1) {
+      setTrackIndex(0);
+    }
+    if (tracksArr.length === 0 && trackIndex !== -1) {
+      setTrackIndex(-1);
+    }
+  }, [trackIndex, tracksArr.length]);
 
   useEffect(() => {
     if (tracksRef.current.length > 0) {
+      console.log('Loading track');
       audioRef.current.pause();
       audioRef.current.src = tracksRef.current[trackIndex].path;
       audioRef.current.load();
-      setTrackProgress(0);
+      setTrackState((prevState) => ({
+        ...prevState,
+        progress: 0,
+      }));
       if (didInit) {
         audioRef.current.play();
       } else {
@@ -135,12 +179,12 @@ export const Player = () => {
     <>
       <PlayerHeader theme={themeColor} />
 
-      <MediaDisplay tracks={tracks} currentIndex={trackIndex} onUpload={onUpload} theme={themeColor} />
+      <MediaDisplay tracks={tracksArr} currentIndex={trackIndex} onUpload={onUpload} theme={themeColor} />
 
       <MediaControls
         audioRef={audioRef}
         isPlaying={isPlaying}
-        trackProgress={trackProgress}
+        trackState={trackState}
         volume={volume}
         switchPrevTrack={switchPrevTrack}
         switchNextTrack={switchNextTrack}
