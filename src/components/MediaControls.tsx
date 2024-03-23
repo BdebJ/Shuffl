@@ -1,5 +1,5 @@
 import { PreviousIcon, NextIcon, PlayIcon, PauseIcon } from './Icons';
-
+import { formatTime } from  '../utils';
 import type { TrackState } from './Player';
 
 type MediaControlsProps = {
@@ -31,11 +31,6 @@ export const MediaControls = ({
     ? `${(trackState.progress / audioRef.current.duration) * 100}%`
     : '0%';
   const trackStyling = `-webkit-gradient(linear, 0% 0%, 100% 0%, color-stop(${currentPercentage}, ${theme}), color-stop(${currentPercentage}, lightgray))`;
-
-  const formatTime = (seconds: number): string => {
-    const formattedTime = new Date(seconds * 1000).toISOString();
-    return seconds < 3600 ? formattedTime.substring(14, 19) : formattedTime.substring(11, 16);
-  };
 
   return (
     <div className="media_controls">

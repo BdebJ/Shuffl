@@ -16,6 +16,24 @@ button {
   cursor: pointer;
 }
 
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  box-shadow: inset 0 0 5px #bebebe; 
+  border-radius: 10px;
+}
+ 
+::-webkit-scrollbar-thumb {
+  background: $theme_color; 
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #3c216a; 
+}
+
 input[type='range'] {
   height: 1px;
   -webkit-appearance: none;

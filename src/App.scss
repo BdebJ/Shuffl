@@ -28,6 +28,7 @@
   height: 100vh;
   overflow: auto;
   backdrop-filter: blur(25px);
+  overflow-x: hidden;
 
   .app_header {
     height: 80px;
