@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import { MusicNoteIcon } from './Icons';
-
+import { formatTime } from  '../utils';
 import type { TrackElement } from './Player';
 
 type MediaDiplayProps = {
@@ -78,7 +78,7 @@ export const MediaDisplay = ({ tracks, currentIndex, onUpload, theme }: MediaDip
                 className={`media_list_card 
                 ${index === currentIndex ? 'current_media_playing' : ''}`}
               >
-                {track.name.split('.')[0]}
+                {`${track.name.split('.')[0]} - ${formatTime(Math.floor(track.duration))}`}
               </li>
             ))}
           </ol>

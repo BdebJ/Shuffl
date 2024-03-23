@@ -7,6 +7,7 @@ import { MediaControls } from './MediaControls';
 export type TrackElement = {
   name: string;
   path: string;
+  duration: number;
 };
 
 export type TrackState = {
@@ -43,13 +44,40 @@ export const Player = () => {
     }));
   };
 
-  const onUpload = (files: File[]) => {
-    console.log('Adding new tracks');
-    const newTracks = files.map((file) => ({
-      name: file.name,
-      path: URL.createObjectURL(file),
-    }));
+  const getAudioDuration = (filePath: string) : Promise<number> => {
+    return new Promise((resolve, reject) => {
+      const audio = new Audio();
+      audio.src = filePath;
+      audio.addEventListener('loadedmetadata', function() {
+        resolve(audio.duration);
+      });
+      audio.addEventListener('error', reject);
+    });
+  };
+ 
+  const processFiles = async (files: File []) => {
+    const newTracks = [];
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const filePath = URL.createObjectURL(file);
+      try {
+        const duration = await getAudioDuration(filePath);
+        newTracks.push({
+          name: file.name,
+          path: filePath,
+          duration: duration
+        });
+      } catch (error) {
+        console.error('Error loading audio file:', error);
+      }
+    }
+    return newTracks;
+  };
+  
+  const onUpload = async (files: File[]) => {
+    const newTracks = await processFiles(files);
     setTracks([...tracksArr, ...newTracks]);
+
     if (tracksArr.length === 0) {
       setTrackIndex(0);
     }
